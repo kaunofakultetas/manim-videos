@@ -8,5 +8,5 @@ Animated explainer videos for blockchain concepts, built with [Manim](https://ww
 
 | Animation | Video | Description |
 |---|---|---|
-| **Replace-By-Fee** | [Watch](_BLOCKCHAIN/README.md#replace-by-fee) | Double spend attack using RBF transactions against zero-conf payments |
-| **Mining Fork Resolution** | [Watch](_BLOCKCHAIN/README.md#mining-fork-resolution) | How the blockchain resolves forks when multiple blocks are mined simultaneously |
+| **Replace-By-Fee** | [Download](https://github.com/kaunofakultetas/manim-videos/raw/main/_BLOCKCHAIN/ReplaceByFee/ReplaceByFee.mp4) | Double spend attack using RBF transactions against zero-conf payments |
+| **Mining Fork Resolution** | [Download](https://github.com/kaunofakultetas/manim-videos/raw/main/_BLOCKCHAIN/MiningForkResolution/MiningForkResolution.mp4) | How the blockchain resolves forks when multiple blocks are mined simultaneously |

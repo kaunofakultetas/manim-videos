@@ -2,7 +2,7 @@ from manim import *
 
 
 class ChainBlock(VGroup):
-    """A single block in the blockchain visualization."""
+    """A single block in the blockchain visualisation."""
 
     def __init__(self, number: str, txids=None, color=BLUE, width=1.4, height=0.9,
                  font_size=20, tx_font_size=12, tx_radius=0.14, **kwargs):
@@ -12,7 +12,7 @@ class ChainBlock(VGroup):
 
         self.rect = Rectangle(
             width=width, height=actual_h,
-            color=color, fill_opacity=0.4, stroke_width=2.5,
+            color=color, fill_opacity=0.35, stroke_width=2.5,
         )
         self.number_label = Text(f"#{number}", font_size=font_size, weight=BOLD, color=color)
         content = VGroup(self.number_label)
@@ -20,7 +20,7 @@ class ChainBlock(VGroup):
         if txids:
             self.tx_group = VGroup()
             for txid in txids:
-                bubble = Circle(radius=tx_radius, color=GREEN_D, fill_opacity=0.8)
+                bubble = Circle(radius=tx_radius, color=GREEN_D, fill_opacity=0.7)
                 tx_text = Text(txid, font_size=tx_font_size)
                 if tx_text.width > bubble.width * 0.85:
                     tx_text.scale_to_fit_width(bubble.width * 0.85)

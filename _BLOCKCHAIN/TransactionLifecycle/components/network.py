@@ -2,87 +2,81 @@ from manim import *
 import numpy as np
 
 
-class P2PNetwork(VGroup):
-    """A peer-to-peer network with labeled nodes and propagation support."""
-
-    NODE_POSITIONS = [
-        [-2.5, 1.0, 0],
-        [-1.0, 2.0, 0],
-        [1.0, 2.0, 0],
-        [2.5, 1.0, 0],
-        [2.0, -0.8, 0],
-        [0.0, -1.2, 0],
-        [-2.0, -0.8, 0],
+class NetworkGraph(VGroup):
+    POSITIONS = [
+        [-2.8, 1.2, 0], [-1.0, 2.2, 0], [1.2, 2.1, 0],
+        [2.8, 1.0, 0], [2.2, -0.9, 0], [0.0, -1.4, 0],
+        [-2.2, -0.9, 0], [0.0, 0.5, 0],
+    ]
+    EDGES = [
+        (0, 1), (0, 6), (0, 7), (1, 2), (1, 7),
+        (2, 3), (2, 7), (3, 4), (4, 5), (4, 7),
+        (5, 6), (5, 7), (6, 7),
     ]
 
-    CONNECTIONS = [
-        (0, 1), (0, 6), (1, 2), (1, 6),
-        (2, 3), (2, 5), (3, 4),
-        (4, 5), (5, 6),
-    ]
-
-    def __init__(self, scale_factor=0.7, node_radius=0.2, **kwargs):
+    def __init__(self, scale_f=0.65, node_r=0.22, **kwargs):
         super().__init__(**kwargs)
         self.nodes = VGroup()
-        self.edges = VGroup()
-        self.node_labels = VGroup()
-
-        for i, pos in enumerate(self.NODE_POSITIONS):
-            node = Circle(radius=node_radius, color=BLUE_C, fill_opacity=0.35,
-                           stroke_width=2.5)
-            node.move_to(np.array(pos) * scale_factor)
-            lbl = Text(f"N{i+1}", font_size=10, color=GREY_B)
-            lbl.move_to(node)
-            self.nodes.add(node)
-            self.node_labels.add(lbl)
-
-        for i, j in self.CONNECTIONS:
-            line = Line(
-                self.nodes[i].get_center(), self.nodes[j].get_center(),
-                stroke_width=1.2, color=GREY_B, stroke_opacity=0.5,
+        self.edges_group = VGroup()
+        self.labels = VGroup()
+        for i, pos in enumerate(self.POSITIONS):
+            n = Circle(
+                radius=node_r, color=BLUE_C,
+                fill_opacity=0.25, stroke_width=2,
             )
-            self.edges.add(line)
+            n.move_to(np.array(pos) * scale_f)
+            lbl = Text(f"N{i + 1}", font_size=9, color=GREY_B)
+            lbl.move_to(n)
+            self.nodes.add(n)
+            self.labels.add(lbl)
+        for i, j in self.EDGES:
+            l = Line(
+                self.nodes[i].get_center(), self.nodes[j].get_center(),
+                stroke_width=1, color=GREY_B, stroke_opacity=0.35,
+            )
+            self.edges_group.add(l)
+        self.add(self.edges_group, self.nodes, self.labels)
 
-        self.add(self.edges, self.nodes, self.node_labels)
-
-    def get_propagation_order(self, start_node: int):
-        visited = {start_node}
+    def propagation_waves(self, start=0):
+        visited = {start}
         waves = []
-        frontier = {start_node}
+        frontier = {start}
         adj = {i: set() for i in range(len(self.nodes))}
-        for i, j in self.CONNECTIONS:
-            adj[i].add(j)
-            adj[j].add(i)
+        for a, b in self.EDGES:
+            adj[a].add(b)
+            adj[b].add(a)
         while frontier:
-            next_wave = set()
-            for node in frontier:
-                for neighbor in adj[node]:
-                    if neighbor not in visited:
-                        next_wave.add(neighbor)
-                        visited.add(neighbor)
-            if next_wave:
-                waves.append(list(next_wave))
-            frontier = next_wave
+            nxt = set()
+            for n in frontier:
+                for nb in adj[n]:
+                    if nb not in visited:
+                        nxt.add(nb)
+                        visited.add(nb)
+            if nxt:
+                waves.append(list(nxt))
+            frontier = nxt
         return waves
 
 
-class MempoolPool(VGroup):
-    """A visual mempool container — styled as a waiting room."""
-
-    def __init__(self, width=4.2, height=2.8, color=BLUE_C, **kwargs):
+class MempoolContainer(VGroup):
+    def __init__(self, width=5.2, height=3.6, color=BLUE_C, **kwargs):
         super().__init__(**kwargs)
+        shadow = RoundedRectangle(
+            width=width, height=height, corner_radius=0.18,
+            color=BLACK, fill_opacity=0.15, stroke_width=0,
+        )
+        shadow.shift(DR * 0.05)
         self.container = RoundedRectangle(
             width=width, height=height, corner_radius=0.18,
-            color=color, fill_opacity=0.05, stroke_width=2.5,
+            color=color, fill_opacity=0.04, stroke_width=2,
         )
-        self.title = Text("Mempool", font_size=24, color=color)
+        self.title = Text("Mempool", font_size=24, color=color, weight=BOLD)
         self.title.next_to(self.container, UP, buff=0.12)
-        subtitle = Text("(unconfirmed transaction pool)", font_size=13, color=GREY_B)
-        subtitle.next_to(self.title, DOWN, buff=0.05)
-        self.tx_slots = VGroup()
-        self.add(self.container, self.title, subtitle, self.tx_slots)
-        self.subtitle = subtitle
+        sub = Text("(unconfirmed transaction pool)", font_size=12, color=GREY)
+        sub.next_to(self.title, DOWN, buff=0.06)
+        self.subtitle = sub
+        self.add(shadow, self.container, self.title, sub)
 
-    def get_slot_position(self, index: int):
-        start = self.container.get_top() + DOWN * 0.6
-        return start + DOWN * index * 0.55
+    def slot_pos(self, index):
+        top = self.container.get_top() + DOWN * 0.55
+        return top + DOWN * index * 0.55
